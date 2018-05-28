@@ -1,0 +1,187 @@
+#use "libsim.ic"
+
+int servo0, servo1, servo2, servo3, servo4, servo5;
+
+int analog(int port)
+{  
+	if (port < 2) {
+    printf("Port is in use  by expansion bd\n");
+    beep();
+    return -1;
+  } else if (port < 7) {
+    return sim_sensor(port);
+  } else if (port < 16) {
+    printf("Port %d is not  analog\n", port);
+    beep();
+    return -1;
+  } else if (port < 32) {
+    return sim_sensor(port);
+  } else {
+    printf("Analog port out of range\n");
+    beep();
+    return -1;
+  }
+}
+
+int digital(int port)
+{
+  if (port < 7) 
+    return analog(port) < 128;
+  if (port < 16) 
+    return sim_sensor(port);
+  if (port < 32) 
+    return analog(port) < 128;
+  else {
+    printf("Digital port outof range\n");
+    beep();
+    return -1;
+  }
+}
+
+void motor(int port, int speed)
+{
+	sim_motor(port, speed, 0, 3);
+}
+
+void off(int port)
+{
+	motor(port, 0);
+}
+
+void fd(int port)
+{
+	motor(port, 100);
+}
+
+void bk(int port)
+{
+	motor(port, -100);
+}
+
+void alloff()
+{
+	sim_alloff(4);
+}
+
+void ao()
+{
+	alloff();
+}
+
+int start_button()
+{
+	return peek2(0x7036);
+}
+
+int stop_button()
+{
+	return peek2(0x7038);
+}
+
+int knob()
+{
+	return peek2(0x703A);
+}
+
+
+int init_expbd_servos(int servo)
+{
+	return 1;
+}
+
+int sonar()
+{
+	return peek2(0x703C);
+}
+
+int random(int x)
+{
+    return callml(103, x);
+}
+
+// The following are aliases to provide a uniform interface across
+// disparate targets for choosing and escaping from menus
+int choose_button()
+{
+    return start_button();
+}
+int escape_button()
+{
+    return stop_button();
+}
+
+
+int enable_servos()
+{
+    return(init_expbd_servos(1));
+}
+
+int disable_servos()
+{
+    return(init_expbd_servos(0));
+}
+
+int set_servo_position(int s, int p)
+{
+    if(p>=0 && p <=255){
+        if(s == 0) servo0=p*15+550;
+        else {
+            if(s == 1) servo1=p*15+550;
+            else {
+                if(s == 2) servo2=p*15+550;
+                else {
+                    if(s == 3) servo3=p*15+550;
+                    else {
+                        if(s == 4) servo4=p*15+550;
+                        else {
+                            if(s == 5) servo5=p*15+550;
+                            else { printf("Illegal Servo number %d\n", s);}}}}}}}
+    else printf("Ilgl ser pos %d must be 0-255 \n", p);
+    return (p*15+550);
+}
+
+
+int get_servo_position(int s)
+{
+    if(s == 0) return((servo0-550)/15);
+    else if(s == 1) return((servo1-550)/15);
+      else if(s == 2) return((servo2-550)/15);
+        else if(s == 3) return((servo3-550)/15);
+          else if(s == 4) return((servo4-550)/15);
+            else if(s == 5) return((servo5-550)/15);
+              else printf("Illegal Servo Number %d\n", s);
+}
+
+void reset_system_time()
+{
+}
+
+void start_press()
+{
+    while(!start_button());
+    while(start_button());
+    beep();
+}
+
+void stop_press()
+{
+    while(!stop_button());
+    while(stop_button());
+    beep();
+}
+
+int set_digital_out(int d)
+{
+    return 0;
+}
+
+int clear_digital_out(int d)
+{
+    return 0;
+}
+
+int test_digital_out(int d)
+{
+    return 0;
+}
+
